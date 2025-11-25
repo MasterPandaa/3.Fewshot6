@@ -1,7 +1,8 @@
-import sys
 import random
-import pygame
+import sys
 from typing import List, Tuple
+
+import pygame
 
 # -----------------------------
 # Config & Constants
@@ -27,7 +28,7 @@ EMPTY = 0
 CELL_SIZE = 48  # pixels per grid cell
 HUD_HEIGHT = 64
 PACMAN_SPEED = 3  # pixels per frame
-GHOST_SPEED = 2   # pixels per frame
+GHOST_SPEED = 2  # pixels per frame
 POWER_DURATION_MS = 6000  # duration of power mode
 FPS = 60
 
@@ -40,7 +41,7 @@ MAZE_LAYOUT: List[List[int]] = [
     [1, 2, 2, 2, 2, 2, 1],
     [1, 3, 1, 1, 1, 3, 1],
     [1, 2, 2, 2, 2, 2, 1],
-    [1, 1, 1, 1, 1, 1, 1]
+    [1, 1, 1, 1, 1, 1, 1],
 ]
 
 ROWS = len(MAZE_LAYOUT)
@@ -54,9 +55,12 @@ Vec2 = Tuple[int, int]
 # Utility Functions
 # -----------------------------
 
+
 def grid_to_px(cell: Vec2) -> Vec2:
     cx, cy = cell
-    return int(cx * CELL_SIZE + CELL_SIZE // 2), int(HUD_HEIGHT + cy * CELL_SIZE + CELL_SIZE // 2)
+    return int(cx * CELL_SIZE + CELL_SIZE // 2), int(
+        HUD_HEIGHT + cy * CELL_SIZE + CELL_SIZE // 2
+    )
 
 
 def px_to_grid(px: Vec2) -> Vec2:
@@ -98,6 +102,7 @@ def at_tile_center(px_pos: Tuple[float, float]) -> bool:
 # -----------------------------
 # Entities
 # -----------------------------
+
 
 class Pacman:
     def __init__(self, start_cell: Vec2):
@@ -145,7 +150,10 @@ class Pacman:
 
         # Clamp inside bounds (safety)
         self.pos_x = max(CELL_SIZE // 2, min(WIDTH - CELL_SIZE // 2, self.pos_x))
-        self.pos_y = max(HUD_HEIGHT + CELL_SIZE // 2, min(HUD_HEIGHT + ROWS * CELL_SIZE - CELL_SIZE // 2, self.pos_y))
+        self.pos_y = max(
+            HUD_HEIGHT + CELL_SIZE // 2,
+            min(HUD_HEIGHT + ROWS * CELL_SIZE - CELL_SIZE // 2, self.pos_y),
+        )
 
         # Eat pellets
         gx, gy = px_to_grid((self.pos_x, self.pos_y))
@@ -216,14 +224,21 @@ class Ghost:
 
         # Clamp
         self.pos_x = max(CELL_SIZE // 2, min(WIDTH - CELL_SIZE // 2, self.pos_x))
-        self.pos_y = max(HUD_HEIGHT + CELL_SIZE // 2, min(HUD_HEIGHT + ROWS * CELL_SIZE - CELL_SIZE // 2, self.pos_y))
+        self.pos_y = max(
+            HUD_HEIGHT + CELL_SIZE // 2,
+            min(HUD_HEIGHT + ROWS * CELL_SIZE - CELL_SIZE // 2, self.pos_y),
+        )
 
     def draw(self, surf: pygame.Surface):
         color = (80, 80, 255) if self.frightened else self.color
         x, y = int(self.pos_x), int(self.pos_y)
         # Body
         pygame.draw.circle(surf, color, (x, y - self.radius // 3), self.radius)
-        pygame.draw.rect(surf, color, (x - self.radius, y - self.radius // 3, self.radius * 2, self.radius))
+        pygame.draw.rect(
+            surf,
+            color,
+            (x - self.radius, y - self.radius // 3, self.radius * 2, self.radius),
+        )
         # Eyes
         pygame.draw.circle(surf, WHITE, (x - 8, y - 4), 6)
         pygame.draw.circle(surf, WHITE, (x + 8, y - 4), 6)
@@ -235,7 +250,15 @@ class Ghost:
 # Drawing
 # -----------------------------
 
-def draw_hud(surf: pygame.Surface, font: pygame.font.Font, score: int, lives: int, power: bool, time_left_ms: int):
+
+def draw_hud(
+    surf: pygame.Surface,
+    font: pygame.font.Font,
+    score: int,
+    lives: int,
+    power: bool,
+    time_left_ms: int,
+):
     pygame.draw.rect(surf, GREY, (0, 0, WIDTH, HUD_HEIGHT))
     text = font.render(f"Skor: {score}", True, WHITE)
     surf.blit(text, (16, 16))
@@ -253,7 +276,9 @@ def draw_maze(surf: pygame.Surface, maze: List[List[int]]):
 
     for y in range(ROWS):
         for x in range(COLS):
-            rect = pygame.Rect(x * CELL_SIZE, HUD_HEIGHT + y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+            rect = pygame.Rect(
+                x * CELL_SIZE, HUD_HEIGHT + y * CELL_SIZE, CELL_SIZE, CELL_SIZE
+            )
             tile = maze[y][x]
             if tile == WALL:
                 pygame.draw.rect(surf, NAVY, rect)
@@ -271,7 +296,10 @@ def draw_maze(surf: pygame.Surface, maze: List[List[int]]):
 # Game Logic
 # -----------------------------
 
-def check_collision_circle(a_pos: Tuple[float, float], a_r: int, b_pos: Tuple[float, float], b_r: int) -> bool:
+
+def check_collision_circle(
+    a_pos: Tuple[float, float], a_r: int, b_pos: Tuple[float, float], b_r: int
+) -> bool:
     dx = a_pos[0] - b_pos[0]
     dy = a_pos[1] - b_pos[1]
     return dx * dx + dy * dy <= (a_r + b_r) * (a_r + b_r)
@@ -294,12 +322,13 @@ def clone_maze(layout: List[List[int]]) -> List[List[int]]:
 # Main Loop
 # -----------------------------
 
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption('Pacman - Pygame')
+    pygame.display.set_caption("Pacman - Pygame")
     clock = pygame.time.Clock()
-    font = pygame.font.SysFont('consolas', 24)
+    font = pygame.font.SysFont("consolas", 24)
 
     maze = clone_maze(MAZE_LAYOUT)
 
@@ -354,8 +383,12 @@ def main():
 
             # Collisions Pacman vs Ghosts
             for g in ghosts:
-                if check_collision_circle((pacman.pos_x, pacman.pos_y), pacman.radius,
-                                          (g.pos_x, g.pos_y), g.radius):
+                if check_collision_circle(
+                    (pacman.pos_x, pacman.pos_y),
+                    pacman.radius,
+                    (g.pos_x, g.pos_y),
+                    g.radius,
+                ):
                     if pacman.power:
                         pacman.score += 200
                         g.reset()
@@ -374,7 +407,14 @@ def main():
 
         # Draw
         screen.fill(BLACK)
-        draw_hud(screen, font, pacman.score, pacman.lives, pacman.power, max(0, pacman.power_end_time - now))
+        draw_hud(
+            screen,
+            font,
+            pacman.score,
+            pacman.lives,
+            pacman.power,
+            max(0, pacman.power_end_time - now),
+        )
         draw_maze(screen, maze)
         pacman.draw(screen)
         for g in ghosts:
